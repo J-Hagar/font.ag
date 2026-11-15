@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 import click
 import pyotp
-from flask import Flask, abort, flash, redirect, render_template_string, request, session, url_for
+from flask import Flask, abort, flash, redirect, render_template_string, request, session, url_for, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
@@ -17,9 +17,10 @@ from flask_wtf.csrf import CSRFProtect
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
-from markupsafe import escape
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-app = Flask(__name__, static_folder=".", static_url_path="/assets")
+app = Flask(__name__, static_folder="public", static_url_path="/assets")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.config.update(
     SECRET_KEY=os.getenv("SECRET_KEY", ""),
     SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL", "").replace("postgres://", "postgresql://", 1),
@@ -114,7 +115,7 @@ def health():
 
 @app.get("/")
 def home():
-    return app.send_static_file("index.html")
+    return send_file("index.html")
 
 @app.route("/register", methods=["GET", "POST"])
 @limiter.limit("8 per hour")
