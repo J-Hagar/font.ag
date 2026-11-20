@@ -3,3 +3,5 @@ Flask-Limiter>=3.12,<5
 google-auth>=2.36,<3
 requests>=2.32,<3
 gunicorn>=23,<25
+
+redis>=5,<7
