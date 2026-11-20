@@ -14,8 +14,11 @@ form.addEventListener('submit',function(event){
  if(!purpose||!name||!email||!message){status.textContent='Please complete all required fields.';return;}
  const subject='Beta Epsilon Website Inquiry — '+purpose;
  const body='Inquiry type: '+purpose+'\nFrom: '+name+'\nReply-to email: '+email+'\n\nMessage:\n'+message+'\n\nSent from the Beta Epsilon website inquiry form.';
- const draft='mailto:hagaragrfinance@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
- status.textContent='Opening your email application with the prepared inquiry. Review it and press Send to deliver.';
- window.location.href=draft;
+ const prepared=subject+'\n\n'+body;
+ const page='https://www.facebook.com/astateagr/';
+ const openPage=()=>window.open(page,'_blank','noopener,noreferrer');
+ if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(prepared).then(()=>{status.textContent='Your message was copied. The chapter Facebook page is opening; paste the message there and send it.';openPage();}).catch(()=>{status.textContent='Please copy your message manually and send it using the chapter Facebook page.';showPrepared(prepared,status);});}
+ else{showPrepared(prepared,status);}
+ function showPrepared(text,container){let preview=document.getElementById('preparedContactMessage');if(!preview){preview=document.createElement('textarea');preview.id='preparedContactMessage';preview.rows=9;preview.readOnly=true;container.after(preview);}preview.value=text;let link=document.getElementById('chapterFacebookContact');if(!link){link=document.createElement('a');link.id='chapterFacebookContact';link.href=page;link.target='_blank';link.rel='noopener noreferrer';link.textContent='OPEN BETA EPSILON FACEBOOK PAGE ↗';preview.after(link);}}
 });
 })();
