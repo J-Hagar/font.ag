@@ -30,7 +30,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 VALID_PURPOSES = {"Interested in Joining", "Alumni Relations", "Chapter History or Photos", "General Inquiry"}
 
 def ready():
-    return bool(os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") and os.getenv("TURNSTILE_SECRET_KEY") and os.getenv("RATELIMIT_STORAGE_URI"))
+    return bool(os.getenv("SUBMISSIONS_ENABLED") == "true" and os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") and os.getenv("TURNSTILE_SECRET_KEY") and os.getenv("RATELIMIT_STORAGE_URI"))
 
 def cors(response):
     origin = request.headers.get("Origin", "")
