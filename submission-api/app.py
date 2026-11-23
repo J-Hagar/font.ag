@@ -27,7 +27,7 @@ SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1smGK3171vIcxUT93Qn9PestvwjZeupwH083qFI
 SHEET_RANGE = "'Sheet1'!A:I"
 ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://agr-beta-epsilon-design-test.onrender.com").rstrip("/")
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-VALID_PURPOSES = {"Interested in Joining", "Alumni Relations", "Chapter History or Photos", "General Inquiry"}
+VALID_PURPOSES = {"Interested in Joining", "Learn More About AGR", "Alumni Relations", "Chapter History or Photos", "General Inquiry"}
 
 def ready():
     return bool(os.getenv("SUBMISSIONS_ENABLED") == "true" and os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON") and os.getenv("TURNSTILE_SECRET_KEY") and os.getenv("RATELIMIT_STORAGE_URI"))
@@ -97,7 +97,7 @@ def submit():
         return jsonify(status="saved", submissionId=submission_id), 201
     except Exception:
         app.logger.exception("Unable to save website submission")
-        return jsonify(error="We could not save your inquiry. Please use the chapter Facebook contact link."), 503
+        return jsonify(error="We could not save your inquiry. Please contact the chapter office once its official mailbox is active."), 503
 
 if __name__ == "__main__":
     app.run(port=int(os.getenv("PORT", "10000")))
