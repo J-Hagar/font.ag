@@ -15,10 +15,11 @@ form.addEventListener('submit',function(event){
  const subject='Beta Epsilon Website Inquiry — '+purpose;
  const body='Inquiry type: '+purpose+'\nFrom: '+name+'\nReply-to email: '+email+'\n\nMessage:\n'+message+'\n\nSent from the Beta Epsilon website inquiry form.';
  const prepared=subject+'\n\n'+body;
- const page='https://www.facebook.com/astateagr/';
- const openPage=()=>window.open(page,'_blank','noopener,noreferrer');
- if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(prepared).then(()=>{status.textContent='Your message was copied. Open the chapter Facebook page below, paste the message and send it.';showPrepared(prepared,status);}).catch(()=>{status.textContent='Please copy your message manually and send it using the chapter Facebook page.';showPrepared(prepared,status);});}
- else{showPrepared(prepared,status);}
- function showPrepared(text,container){let preview=document.getElementById('preparedContactMessage');if(!preview){preview=document.createElement('textarea');preview.id='preparedContactMessage';preview.rows=9;preview.readOnly=true;container.after(preview);}preview.value=text;let link=document.getElementById('chapterFacebookContact');if(!link){link=document.createElement('a');link.id='chapterFacebookContact';link.href=page;link.target='_blank';link.rel='noopener noreferrer';link.textContent='OPEN BETA EPSILON FACEBOOK PAGE ↗';preview.after(link);}}
+ const chapterMailbox=''; // Enable only when the chapter Gmail account is confirmed active.
+ const page='';
+ if(chapterMailbox){window.location.href='mailto:'+encodeURIComponent(chapterMailbox)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);status.textContent='Your email application has been opened. Review and send the message.';return;}
+ status.textContent='The chapter mailbox is still being created. Your draft appears below; it has NOT been sent or saved. Please retain it until the mailbox is activated.';
+ showPrepared(prepared,status);
+ function showPrepared(text,container){let preview=document.getElementById('preparedContactMessage');if(!preview){preview=document.createElement('textarea');preview.id='preparedContactMessage';preview.rows=9;preview.readOnly=true;container.after(preview);}preview.value=text;preview.focus();}
 });
 })();
