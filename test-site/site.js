@@ -15,9 +15,8 @@ form.addEventListener('submit',function(event){
  const subject='Beta Epsilon Website Inquiry — '+purpose;
  const body='Inquiry type: '+purpose+'\nFrom: '+name+'\nReply-to email: '+email+'\n\nMessage:\n'+message+'\n\nSent from the Beta Epsilon website inquiry form.';
  const prepared=subject+'\n\n'+body;
- const chapterMailbox=''; // Enable only when the chapter Gmail account is confirmed active.
- const page='';
- if(chapterMailbox){window.location.href='mailto:'+encodeURIComponent(chapterMailbox)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);status.textContent='Your email application has been opened. Review and send the message.';return;}
+ const chapterMailbox='asuagrbe@gmail.com'; // Chapter Gmail inbox verified on 2026-11-23.
+ if(chapterMailbox){window.location.href='mailto:'+encodeURIComponent(chapterMailbox)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);status.textContent='Your email application has been opened. You must send the message from your email program. This test website does not yet save submissions to the Google Sheet.';return;}
  status.textContent='The chapter mailbox is still being created. Your draft appears below; it has NOT been sent or saved. Please retain it until the mailbox is activated.';
  showPrepared(prepared,status);
  function showPrepared(text,container){let preview=document.getElementById('preparedContactMessage');if(!preview){preview=document.createElement('textarea');preview.id='preparedContactMessage';preview.rows=9;preview.readOnly=true;container.after(preview);}preview.value=text;preview.focus();}
