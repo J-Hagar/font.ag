@@ -42,3 +42,23 @@
 .gallery-card.new-member-photo .event-caption{position:absolute;inset:auto 0 0;padding:35px 20px 18px;background:linear-gradient(transparent,#061d17ef);z-index:2}
 .gallery-card.new-member-photo .event-caption strong{font-size:25px}
 .gallery-card.new-member-photo:before{z-index:3;pointer-events:none}
+
+
+/* Public chapter imagery and extended content */
+.gallery-card.flag-photo{padding:0;background:#163d2f;position:relative;overflow:hidden}
+.gallery-card.flag-photo>img{height:100%;width:100%;object-fit:cover;display:block;filter:brightness(.84)}
+.gallery-card.flag-photo .event-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#06231ceF);padding:38px 19px 16px;display:flex;flex-direction:column;z-index:2;color:white}
+.gallery-card.flag-photo .event-caption strong{font-size:24px}
+.gallery-card.flag-photo:before{z-index:3;pointer-events:none}
+.chapter-impact{background:#f0f1e8}
+.chapter-impact-grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);align-items:center;gap:8%}
+.chapter-impact-photo{position:relative;min-height:500px;align-self:stretch;background:#1d412f;overflow:hidden}
+.chapter-impact-photo img{height:100%;width:100%;position:absolute;inset:0;object-fit:cover;object-position:center}
+.chapter-impact-photo span{position:absolute;left:0;bottom:0;right:0;padding:22px 24px 18px;color:#fff;background:linear-gradient(transparent,#061c16ed);font-size:11px;letter-spacing:1.4px;font-weight:700}
+.chapter-impact-copy h2{max-width:680px}
+.impact-topics{margin:28px 0 32px;border-top:1px solid #cdd3c7}
+.impact-topics>div{display:grid;grid-template-columns:190px 1fr;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid #cdd3c7}
+.impact-topics strong{font-size:12px;color:#164e34;letter-spacing:.1px}
+.impact-topics span{color:#4e5c52;font-size:13px;line-height:1.5}
+.portal-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+@media(max-width:800px){.chapter-impact-grid{grid-template-columns:1fr;gap:27px}.chapter-impact-photo{height:380px;min-height:380px}.impact-topics>div{grid-template-columns:1fr;gap:3px}}
