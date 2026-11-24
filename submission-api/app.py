@@ -118,7 +118,7 @@ def submit():
         result = response.json()
         route = "member-sheet-and-email" if purpose == MEMBER_PURPOSE else "public-sheet-only"
         if result.get("status") != "submitted" or result.get("route") != route:
-            app.logger.error("Chapter router did not confirm %s processing", route)
+            app.logger.error("Chapter router did not confirm %s processing: http=%s fields=%s returned_status=%r returned_route=%r", route, response.status_code, sorted(result.keys()) if isinstance(result, dict) else [], result.get("status") if isinstance(result, dict) else None, result.get("route") if isinstance(result, dict) else None)
             return jsonify(error="The inquiry was not confirmed. Please contact the chapter office."), 503
         return jsonify(status="submitted", route=route, submissionId=result.get("submissionId")), 201
     except (requests.RequestException, ValueError):
