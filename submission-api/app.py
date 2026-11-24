@@ -20,6 +20,8 @@ limiter = Limiter(get_remote_address, app=app, default_limits=["25 per hour"],
 ALLOWED_ORIGINS = {
     "https://agr-beta-epsilon-design-test.onrender.com",
     "https://agr-beta-epsilon.onrender.com",
+    "https://asuagrbe.org",
+    "https://www.asuagrbe.org",
 }
 PUBLIC_PURPOSES = {
     "Interested in Joining", "Learn More About AGR", "General Inquiry",
