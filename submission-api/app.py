@@ -69,13 +69,14 @@ def submit():
     message = str(data.get("message", "")).strip()[:4000]
     address = str(data.get("address", "")).strip()[:400]
     phone = str(data.get("phone", "")).strip()[:40]
+    stud_number = str(data.get("studNumber", "")).strip()[:64]
 
     if not (2 <= len(name) <= 150 and
             re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email)):
         return jsonify(error="Please enter your full name and a valid email."), 400
     if purpose == MEMBER_PURPOSE:
-        if not 8 <= len(address) <= 400 or not re.fullmatch(r"[0-9+(). \-]{7,40}", phone):
-            return jsonify(error="Please enter your full mailing address and phone number."), 400
+        if not 8 <= len(address) <= 400 or not re.fullmatch(r"[0-9+(). \-]{7,40}", phone) or not 1 <= len(stud_number) <= 64:
+            return jsonify(error="Please enter your mailing address, phone number, and Stud Number (PIN)."), 400
     elif purpose in PUBLIC_PURPOSES:
         if not 5 <= len(message) <= 4000:
             return jsonify(error="Please provide your question or message."), 400
@@ -104,7 +105,8 @@ def submit():
                   "submissionId": submission_id, "purpose": purpose, "name": name,
                   "email": email, "message": message,
                   "address": address if purpose == MEMBER_PURPOSE else "",
-                  "phone": phone if purpose == MEMBER_PURPOSE else ""},
+                  "phone": phone if purpose == MEMBER_PURPOSE else "",
+                  "studNumber": stud_number if purpose == MEMBER_PURPOSE else ""},
             timeout=28,
             allow_redirects=True,
         )
