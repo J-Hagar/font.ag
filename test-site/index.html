@@ -51,7 +51,7 @@
 <p>For Beta Epsilon undergraduate and alumni members. All fields are required, including your Stud Number (PIN). Submitting this form requests administrator review; it does not immediately create a login or grant access.</p>
 <div aria-hidden="true" style="position:absolute;left:-10000px"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
 <label for="memberName">Full name</label><input id="memberName" name="name" autocomplete="name" maxlength="150" required>
-<label for="memberEmail">Email address</label><input id="memberEmail" name="email" type="email" autocomplete="email" maxlength="254" required>
+<label for="memberEmail">Email address</label><input id="memberEmail" name="email" type="email" autocomplete="email" maxlength="254" required><label for="memberAffiliation">Membership status</label><select id="memberAffiliation" name="affiliation" required><option value="">Select membership status</option><option value="undergraduate">Undergraduate Member</option><option value="alumni">Alumnus</option></select>
 <label for="memberAddress">Mailing address (street, city, state, ZIP)</label><textarea id="memberAddress" name="address" rows="3" maxlength="400" autocomplete="street-address" required></textarea>
 <label for="memberPhone">Phone number</label><input id="memberPhone" name="phone" type="tel" autocomplete="tel" maxlength="40" required>
 <label for="memberStudNumber">Stud Number (PIN)</label><input id="memberStudNumber" name="studNumber" type="text" inputmode="text" autocomplete="off" maxlength="64" minlength="1" required><p class="contact-disclaimer">Required for member identification. Do not enter a password or banking PIN.</p>
