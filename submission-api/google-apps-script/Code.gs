@@ -15,6 +15,30 @@ const PUBLIC_PURPOSES = [
 ];
 const MEMBER_PURPOSE = 'Member Account Request';
 
+/**
+ * Check the chapter account's current Google consent without exposing any
+ * authorization URL to public site visitors or logging sensitive tokens.
+ * Run this directly from the Apps Script editor as ASUAGRBE@gmail.com.
+ */
+function checkAuthorization() {
+  const info = ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL);
+  const status = info.getAuthorizationStatus();
+  if (status === ScriptApp.AuthorizationStatus.REQUIRED) {
+    const url = info.getAuthorizationUrl();
+    Logger.log('Google authorization required for chapter account.');
+    if (url) Logger.log('Open this authorization URL while signed in as the chapter account: ' + url);
+  } else {
+    Logger.log('Google authorization already granted for the script scopes.');
+  }
+  return String(status);
+}
+
+function requestAuthorization() {
+  // When invoked in Apps Script's editor, prompt for required scopes.
+  ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
+  return checkAuthorization();
+}
+
 function authorize() {
   const ss = SpreadsheetApp.openById(SHEET_ID);
   return 'Sheets available: ' + ss.getSheets().map(s => s.getName()).join(', ') +
