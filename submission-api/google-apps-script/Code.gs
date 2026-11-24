@@ -1,70 +1,98 @@
-/** AGR Beta Epsilon public website inquiry router (owned by ASUAGRBE@gmail.com).
- *  Server-to-server only. Web app must execute as this account. Never embed shared secret in website JS.
- *  Project Settings > Script Properties: ROUTER_SHARED_SECRET = secret configured in Render.
+/**
+ * AGR Beta Epsilon chapter website inquiry routing.
+ * Deploy as chapter account ASUAGRBE@gmail.com, execute as Me.
+ * Set Script Property ROUTER_SHARED_SECRET to match the Render server.
+ * Only server-side Render may supply the secret. Never put it in public HTML/JS.
  */
 const SHEET_ID = '1smGK3171vIcxUT93Qn9PestvwjZeupwH083qFI_NlUs';
 const CHAPTER_INBOX = 'asuagrbe@gmail.com';
-const RECRUITMENT = ['Interested in Joining', 'Learn More About AGR'];
-const ADMIN_ONLY = ['General Inquiry', 'Alumni Relations', 'Chapter History or Photos'];
+const PUBLIC_PURPOSES = [
+  'Interested in Joining',
+  'Learn More About AGR',
+  'General Inquiry',
+  'Alumni Relations',
+  'Chapter History or Photos'
+];
+const MEMBER_PURPOSE = 'Member Account Request';
 
 function authorize() {
-  const name = SpreadsheetApp.openById(SHEET_ID).getSheets()[0].getName();
-  const quota = MailApp.getRemainingDailyQuota();
-  return 'Authorized sheet ' + name + ', available email quota ' + quota;
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  return 'Sheets available: ' + ss.getSheets().map(s => s.getName()).join(', ') +
+    '; email quota: ' + MailApp.getRemainingDailyQuota();
+}
+
+function output(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents || e.postData.contents.length > 14000)
       throw new Error('Invalid request');
-    const p = JSON.parse(e.postData.contents);
-    const sharedSecret = PropertiesService.getScriptProperties().getProperty('ROUTER_SHARED_SECRET');
-    if (!sharedSecret || p.routerSecret !== sharedSecret)
-      throw new Error('Not authorized');
-    const purpose = String(p.purpose || '').trim();
-    const name = String(p.name || '').trim().slice(0, 150);
-    const email = String(p.email || '').trim().toLowerCase().slice(0, 254);
-    const message = String(p.message || '').trim().slice(0, 4000);
-    if (!RECRUITMENT.includes(purpose) && !ADMIN_ONLY.includes(purpose))
-      throw new Error('Invalid purpose');
-    if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || message.length < 5)
-      throw new Error('Invalid required fields');
+    const data = JSON.parse(e.postData.contents);
+    const secret = PropertiesService.getScriptProperties().getProperty('ROUTER_SHARED_SECRET');
+    if (!secret || data.routerSecret !== secret) throw new Error('Not authorized');
 
-    const id = Utilities.getUuid();
+    const purpose = String(data.purpose || '').trim();
+    const name = String(data.name || '').trim().slice(0, 150);
+    const email = String(data.email || '').trim().toLowerCase().slice(0, 254);
+    const message = String(data.message || '').trim().slice(0, 4000);
+    const address = String(data.address || '').trim().slice(0, 400);
+    const phone = String(data.phone || '').trim().slice(0, 40);
+    if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      throw new Error('Invalid name or email');
+    if (purpose !== MEMBER_PURPOSE && PUBLIC_PURPOSES.indexOf(purpose) < 0)
+      throw new Error('Invalid purpose');
+    if (purpose === MEMBER_PURPOSE && (address.length < 8 || !/^[0-9+(). \-]{7,40}$/.test(phone)))
+      throw new Error('Missing address or phone');
+    if (purpose !== MEMBER_PURPOSE && message.length < 5)
+      throw new Error('Missing message');
+
+    const id = String(data.submissionId || Utilities.getUuid()).slice(0, 100);
     const timestamp = new Date().toISOString();
-    if (RECRUITMENT.includes(purpose)) {
-      const safe = value => /^[=+\-@]/.test(value.trimStart()) ? "'" + value : value;
-      const lock = LockService.getScriptLock();
-      if (!lock.tryLock(10000)) throw new Error('Server busy');
-      try {
-        const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Sheet1');
-        if (!sheet) throw new Error('Missing Sheet1');
-        sheet.appendRow([timestamp, id, purpose, safe(name), safe(email), safe(message),
-          'https://agr-beta-epsilon-design-test.onrender.com', 'New', '']);
-      } finally {
-        lock.releaseLock();
+    const safe = value => /^[=+\-@]/.test(value.trimStart()) ? "'" + value : value;
+    const lock = LockService.getScriptLock();
+    if (!lock.tryLock(12000)) throw new Error('Busy');
+    try {
+      const ss = SpreadsheetApp.openById(SHEET_ID);
+      if (purpose === MEMBER_PURPOSE) {
+        const sheet = ss.getSheetByName('Member Access Requests');
+        if (!sheet) throw new Error('Member requests sheet missing');
+        // Avoid duplicate entries for repeated retries of the same submission ID.
+        if (sheet.createTextFinder(id).matchEntireCell(true).findNext() === null) {
+          sheet.appendRow([timestamp, id, safe(name), safe(email), safe(address), safe(phone), 'New', '']);
+        }
+      } else {
+        const sheet = ss.getSheetByName('Sheet1');
+        if (!sheet) throw new Error('Public inquiry sheet missing');
+        if (sheet.createTextFinder(id).matchEntireCell(true).findNext() === null) {
+          sheet.appendRow([timestamp, id, purpose, safe(name), safe(email), safe(message),
+            'https://agr-beta-epsilon-design-test.onrender.com', 'New', '']);
+        }
       }
-      return jsonOutput({status: 'saved', route: 'recruitment', submissionId: id});
+    } finally {
+      lock.releaseLock();
     }
 
-    MailApp.sendEmail({
-      to: CHAPTER_INBOX,
-      subject: 'AGR Beta Epsilon website inquiry: ' + purpose,
-      body: 'New website inquiry\n\nPurpose: ' + purpose +
-        '\nName: ' + name + '\nReply to: ' + email +
-        '\nReceived: ' + timestamp + '\nReference: ' + id +
-        '\n\nMessage:\n' + message,
-      name: 'AGR Beta Epsilon Website',
-      replyTo: email
-    });
-    return jsonOutput({status: 'emailed', route: 'chapter-inbox', submissionId: id});
-  } catch (err) {
-    console.error(String(err));
-    return jsonOutput({status: 'error', message: 'Unable to process inquiry'});
-  }
-}
+    if (purpose === MEMBER_PURPOSE) {
+      MailApp.sendEmail({
+        to: CHAPTER_INBOX,
+        subject: 'Beta Epsilon member account request: ' + name,
+        body: 'New member account request — approval required.\n\n' +
+          'Name: ' + name + '\nEmail: ' + email + '\nMailing address: ' + address +
+          '\nPhone: ' + phone + '\nRequest ID: ' + id +
+          '\n\nSee the private Member Access Requests Google Sheet tab. ' +
+          'Verify chapter membership independently before creating or approving portal access.',
+        replyTo: email,
+        name: 'AGR Beta Epsilon Website'
+      });
+      return output({status: 'submitted', route: 'member-sheet-and-email', submissionId: id});
+    }
 
-function jsonOutput(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+    return output({status: 'submitted', route: 'public-sheet-only', submissionId: id});
+  } catch (err) {
+    console.error('Inquiry failed: ' + String(err));
+    return output({status: 'error', message: 'Inquiry not confirmed'});
+  }
 }
