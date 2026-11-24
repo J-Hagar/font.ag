@@ -40,12 +40,13 @@ function doPost(e) {
     const message = String(data.message || '').trim().slice(0, 4000);
     const address = String(data.address || '').trim().slice(0, 400);
     const phone = String(data.phone || '').trim().slice(0, 40);
+    const studNumber = String(data.studNumber || '').trim().slice(0, 64);
     if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
       throw new Error('Invalid name or email');
     if (purpose !== MEMBER_PURPOSE && PUBLIC_PURPOSES.indexOf(purpose) < 0)
       throw new Error('Invalid purpose');
-    if (purpose === MEMBER_PURPOSE && (address.length < 8 || !/^[0-9+(). \-]{7,40}$/.test(phone)))
-      throw new Error('Missing address or phone');
+    if (purpose === MEMBER_PURPOSE && (address.length < 8 || !/^[0-9+(). \-]{7,40}$/.test(phone) || !studNumber))
+      throw new Error('Missing address, phone or Stud Number (PIN)');
     if (purpose !== MEMBER_PURPOSE && message.length < 5)
       throw new Error('Missing message');
 
@@ -61,7 +62,7 @@ function doPost(e) {
         if (!sheet) throw new Error('Member requests sheet missing');
         // Avoid duplicate entries for repeated retries of the same submission ID.
         if (sheet.createTextFinder(id).matchEntireCell(true).findNext() === null) {
-          sheet.appendRow([timestamp, id, safe(name), safe(email), safe(address), safe(phone), 'New', '']);
+          sheet.appendRow([timestamp, id, safe(name), safe(email), safe(address), safe(phone), 'New', '', safe(studNumber)]);
         }
       } else {
         const sheet = ss.getSheetByName('Sheet1');
