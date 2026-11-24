@@ -68,6 +68,7 @@
     event.preventDefault();
     send(member, document.getElementById('memberFormStatus'), {
       purpose: 'Member Account Request',
+      affiliation: document.getElementById('memberAffiliation').value,
       name: document.getElementById('memberName').value.trim(),
       email: document.getElementById('memberEmail').value.trim(),
       address: document.getElementById('memberAddress').value.trim(),
