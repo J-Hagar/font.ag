@@ -71,7 +71,8 @@
       name: document.getElementById('memberName').value.trim(),
       email: document.getElementById('memberEmail').value.trim(),
       address: document.getElementById('memberAddress').value.trim(),
-      phone: document.getElementById('memberPhone').value.trim()
+      phone: document.getElementById('memberPhone').value.trim(),
+      studNumber: document.getElementById('memberStudNumber').value.trim()
     }, member.querySelector('button[type="submit"]'), 'SUBMIT MEMBER REQUEST →',
     'Your member account request has been recorded and sent to the chapter administrator for review. Access is not granted until approved.');
   });
