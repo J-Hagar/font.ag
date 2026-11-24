@@ -28,42 +28,51 @@
 })();
 
 (function () {
-  const form = document.getElementById('chapterContactForm');
-  if (!form) return;
   const endpoint = 'https://agr-beta-epsilon-submission-api.onrender.com/api/submit';
-  const status = document.getElementById('contactFormStatus');
-  const submitButton = form.querySelector('button[type="submit"]');
-  form.addEventListener('submit', async event => {
-    event.preventDefault();
+  async function send(form, status, payload, button, originalLabel, successMessage) {
     if (!form.reportValidity()) return;
-    submitButton.disabled = true;
-    submitButton.textContent = 'SUBMITTING…';
-    status.textContent = 'Submitting your inquiry securely…';
+    button.disabled = true;
+    button.textContent = 'SUBMITTING…';
+    status.textContent = 'Submitting securely…';
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          purpose: document.getElementById('inquiryPurpose').value,
-          name: document.getElementById('contactName').value.trim(),
-          email: document.getElementById('contactEmail').value.trim(),
-          message: document.getElementById('contactMessage').value.trim(),
-          website: form.querySelector('[name="website"]')?.value || ''
-        })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({...payload, website: form.querySelector('[name="website"]')?.value || ''})
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || result.status !== 'submitted') {
-        throw new Error(result.error || 'Your inquiry could not be delivered. Please try again later.');
-      }
-      status.textContent = result.route === 'recruitment'
-        ? 'Thank you. Your recruitment inquiry was received and added to the chapter follow-up list.'
-        : 'Thank you. Your inquiry was delivered to the chapter administrator.';
+      if (!response.ok || result.status !== 'submitted')
+        throw new Error(result.error || 'Your request could not be recorded. Please try again.');
+      status.textContent = successMessage;
       form.reset();
     } catch (error) {
-      status.textContent = error.message || 'The chapter form is temporarily unavailable. Please try again later.';
+      status.textContent = error.message || 'Your request could not be recorded. Please try again.';
     } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = 'SUBMIT →';
+      button.disabled = false;
+      button.textContent = originalLabel;
     }
+  }
+  const contact = document.getElementById('chapterContactForm');
+  if (contact) contact.addEventListener('submit', event => {
+    event.preventDefault();
+    send(contact, document.getElementById('contactFormStatus'), {
+      purpose: document.getElementById('inquiryPurpose').value,
+      name: document.getElementById('contactName').value.trim(),
+      email: document.getElementById('contactEmail').value.trim(),
+      message: document.getElementById('contactMessage').value.trim()
+    }, contact.querySelector('button[type="submit"]'), 'SUBMIT →',
+    'Thank you. Your question was saved to the chapter follow-up list.');
+  });
+  const member = document.getElementById('memberRequestForm');
+  if (member) member.addEventListener('submit', event => {
+    event.preventDefault();
+    send(member, document.getElementById('memberFormStatus'), {
+      purpose: 'Member Account Request',
+      name: document.getElementById('memberName').value.trim(),
+      email: document.getElementById('memberEmail').value.trim(),
+      address: document.getElementById('memberAddress').value.trim(),
+      phone: document.getElementById('memberPhone').value.trim()
+    }, member.querySelector('button[type="submit"]'), 'SUBMIT MEMBER REQUEST →',
+    'Your member account request has been recorded and sent to the chapter administrator for review. Access is not granted until approved.');
   });
 })();
