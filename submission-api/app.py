@@ -48,7 +48,7 @@ def response_headers(response):
 
 @app.get("/health")
 def health():
-    return jsonify(status="ok", configured=ready())
+    return jsonify(status="ok", configured=ready(), router_deployment_suffix=(os.getenv("APPS_SCRIPT_WEBAPP_URL", "").split("/s/")[-1].split("/")[0][-8:] if "/s/" in os.getenv("APPS_SCRIPT_WEBAPP_URL", "") else "unavailable"))
 
 @app.route("/api/submit", methods=["POST", "OPTIONS"])
 @limiter.limit("5 per hour")
