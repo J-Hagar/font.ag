@@ -116,6 +116,16 @@ def submit():
         )
         response.raise_for_status()
         app.logger.warning('Google router HTTP response: status=%s content_type=%s host=%s redirects=%s', response.status_code, response.headers.get('Content-Type','unknown').split(';')[0], requests.utils.urlparse(response.url).hostname, len(response.history))
+        if "application/json" not in response.headers.get("Content-Type", "").lower():
+            body = response.text[:10000].lower()
+            markers = {
+                "missing_doPost": "script function not found: dopost" in body,
+                "google_signin": "accounts.google.com" in body or "sign in with google" in body,
+                "google_error": "sorry, unable to open the file" in body or "script.google.com" in body and "error" in body,
+                "authorization_required": "authorization is required" in body or "authorization required" in body,
+            }
+            app.logger.error("Google router returned non-JSON content type=%s size=%s category=%s", response.headers.get("Content-Type","unknown").split(";")[0], len(response.content), next((k for k,v in markers.items() if v), "unclassified"))
+            return jsonify(error="The inquiry could not be confirmed. Please try again."), 503
         result = response.json()
         route = "member-sheet-and-email" if purpose == MEMBER_PURPOSE else "public-sheet-only"
         if result.get("status") != "submitted" or result.get("route") != route:
