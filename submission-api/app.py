@@ -50,6 +50,41 @@ def response_headers(response):
 def health():
     return jsonify(status="ok", configured=ready(), router_deployment_suffix=(os.getenv("APPS_SCRIPT_WEBAPP_URL", "").split("/s/")[-1].split("/")[0][-8:] if "/s/" in os.getenv("APPS_SCRIPT_WEBAPP_URL", "") else "unavailable"))
 
+@app.get("/health/router")
+@limiter.limit("3 per hour")
+def router_health():
+    """Read-only authentication probe. Intentionally invalid purpose prevents writing records."""
+    if not ready():
+        return jsonify(status="unavailable", authenticated=False), 503
+    try:
+        response = requests.post(
+            os.environ["APPS_SCRIPT_WEBAPP_URL"],
+            json={
+                "routerSecret": os.environ["ROUTER_SHARED_SECRET"],
+                "submissionId": "auth-check-" + str(uuid4()),
+                "purpose": "__AUTH_CHECK_NO_WRITE__",
+                "name": "Website router diagnostic",
+                "email": "diagnostic@example.invalid",
+                "message": "Diagnostic only; must not be stored",
+            },
+            timeout=18,
+            allow_redirects=True,
+        )
+        response.raise_for_status()
+        result = response.json()
+        if not isinstance(result, dict):
+            return jsonify(status="unexpected_response", authenticated=False), 502
+        error = result.get("error")
+        if result.get("status") == "error" and error == "Auth":
+            return jsonify(status="authentication_rejected", authenticated=False), 503
+        if result.get("status") == "error" and error in ("Public fields", "Fields", "Public ads"):
+            return jsonify(status="authenticated", authenticated=True), 200
+        # No success response should be possible for an unsupported diagnostic purpose.
+        return jsonify(status="unrecognized_router_response", authenticated=False), 502
+    except (requests.RequestException, ValueError):
+        return jsonify(status="router_unreachable", authenticated=False), 503
+
+
 @app.route("/api/submit", methods=["POST", "OPTIONS"])
 @limiter.limit("5 per hour")
 def submit():
