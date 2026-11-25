@@ -115,6 +115,7 @@ def submit():
             allow_redirects=True,
         )
         response.raise_for_status()
+        app.logger.info('Google router HTTP response: status=%s content_type=%s host=%s redirects=%s', response.status_code, response.headers.get('Content-Type','unknown').split(';')[0], requests.utils.urlparse(response.url).hostname, len(response.history))
         result = response.json()
         route = "member-sheet-and-email" if purpose == MEMBER_PURPOSE else "public-sheet-only"
         if result.get("status") != "submitted" or result.get("route") != route:
